@@ -52,7 +52,7 @@ def main():
 
       #print(f'Temperatur for Oslo {DATE} ')
       st.write(f"Temperatur for {place_string} {date_string} {SOURCE_ID} ")
-
+      sum=0
       for HOUR in range(24):
         HOUR_STR = str(HOUR).zfill(2)  # Pad single digits with leading zero
         REFERENCE_TIME = f"{DATE}T{HOUR_STR}:00:00Z"
@@ -62,6 +62,7 @@ def main():
 
         hour = data['data'][0]['referenceTime']
         hourly_temperature = data['data'][0]['observations'][0]['value']
+        sum+=hourly_temperature
 
         #extract hour in 4 digit format
         hour_4digits = hour[hour.index('T') + 1:hour.index('T') + 6]
@@ -74,6 +75,9 @@ def main():
 
     else:
       st.write('Ikke funnet')
+
+    average=round(sum/24,2)
+    st.write(f'snitt temperatur er: {average}')
 
 
 if __name__ == "__main__":
