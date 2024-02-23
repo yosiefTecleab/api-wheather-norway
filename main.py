@@ -3,6 +3,7 @@ import requests
 from datetime import datetime
 import json
 
+CLIENT_ID = st.secrets(["CLIENT_ID"])
 
 def get_source_id(place):
   #place='tron'
