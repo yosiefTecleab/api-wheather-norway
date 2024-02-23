@@ -3,8 +3,6 @@ import requests
 from datetime import datetime
 import json
 
-CLIENT_ID = '83ff59d0-b168-4e05-88af-70d2412d2799'
-
 
 def get_source_id(place):
   #place='tron'
