@@ -3,7 +3,8 @@ import requests
 from datetime import datetime
 import json
 
-CLIENT_ID = st.secrets(["CLIENT_ID"])
+
+auth=(st.secrets(["CLIENT_ID"]), '')
 
 def get_source_id(place):
   #place='tron'
@@ -58,7 +59,7 @@ def main():
         HOUR_STR = str(HOUR).zfill(2)  # Pad single digits with leading zero
         REFERENCE_TIME = f"{DATE}T{HOUR_STR}:00:00Z"
         URL = f"https://frost.met.no/observations/v0.jsonld?sources={SOURCE_ID}&referencetime={REFERENCE_TIME}&elements=air_temperature"
-        response = requests.get(URL, auth=(CLIENT_ID, ''))
+        response = requests.get(URL, auth=auth)
         data = response.json()
 
         hour = data['data'][0]['referenceTime']
