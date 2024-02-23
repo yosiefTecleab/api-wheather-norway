@@ -33,14 +33,16 @@ def get_source_id(place):
 
 def main():
   st.title("Værdata")
+  
+  col1,col2,col3=st.columns([1,1,1])
 
-  place_string = st.text_input('Skriv byen du vil finne temperatur for')
+  place_string = col1.text_input('Skriv byen du vil finne temperatur for')
 
-  date_string = st.date_input('Skriv datoen du vil finne temperatur for:',
+  date_string = col1.date_input('Skriv datoen du vil finne temperatur for:',
                               format="DD.MM.YYYY",
                               value=None)
 
-  if st.button('hent Værdata'):
+  if col1.button('hent Værdata'):
     station_found = get_source_id(place_string)
     if len(station_found) != 0 and date_string:
 
@@ -51,7 +53,7 @@ def main():
       #print(datetime.now().strftime('%d.%m.%Y'))
 
       #print(f'Temperatur for Oslo {DATE} ')
-      st.write(f"Temperatur for {place_string} {date_string} {SOURCE_ID} ")
+      col2.write(f"Temperatur for {place_string} {date_string} {SOURCE_ID} ")
       sum=0
       for HOUR in range(24):
         HOUR_STR = str(HOUR).zfill(2)  # Pad single digits with leading zero
@@ -68,16 +70,16 @@ def main():
         hour_4digits = hour[hour.index('T') + 1:hour.index('T') + 6]
 
         #e.g  Kl 00:00 10 grader
-        output = f'Kl {hour_4digits} {hourly_temperature} grader'
+        output = f'Kl {hour_4digits}  {  hourly_temperature} grader'
 
         #print(output)
-        st.write(output)
+        col2.write(output)
 
     else:
-      st.write('Ikke funnet')
+      col1.write('Ikke funnet')
 
     average=round(sum/24,2)
-    st.write(f'snitt temperatur er: {average}')
+    col1.write(f'snitt temperatur er: {average}')
 
 
 if __name__ == "__main__":
