@@ -35,7 +35,7 @@ def sources():
 def get_source_id(place):
   #place='tron'
 
-  with open("sources.json", "r") as file:
+  with open("source_id.json", "r") as file:
     id = json.load(file)  #json
     data = id["data"]
 
