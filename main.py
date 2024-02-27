@@ -88,7 +88,7 @@ def fetch_temperature_or_wind(place_string, date_string, NAME):
       REFERENCE_TIME = f"{DATE}T{HOUR_STR}:00:00Z"
       URL = f"https://frost.met.no/observations/v0.jsonld?sources={SOURCE_ID}&referencetime={REFERENCE_TIME}&elements={NAME}"
 
-      response = requests.get(URL, auth=(CLIENT_ID, ''))
+      response = requests.get(URL, auth=(st.secrets["CLIENT_ID"], ''))
       data = response.json()
 
       hour = data['data'][0]['referenceTime']
