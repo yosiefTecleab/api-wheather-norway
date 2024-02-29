@@ -6,7 +6,7 @@ import re
 
 
 st.title("Værdata")
-col1, col2, col3, col4 = st.columns([3, 3, 3, 3])  # global s\declares columns
+col1, col2, col3 = st.columns([3, 3, 3])  # global s\declares columns
 
 
 def sources():
@@ -14,7 +14,6 @@ def sources():
   data = []
   # Send a GET request to the API
   response = requests.get(url, auth=(CLIENT_ID, ''))
-  
 
   # Check if the request was successful (status code 200)
   if response.status_code == 200:
@@ -59,54 +58,10 @@ def get_source_id(place):
   return stations
 
 
-def calculate_average(data):
-  
-  return round(sum(data) / len(data), 1) if len(data) > 0 else 0.0
-
-
-
-def partition_of_day(temperature_data):
-    part1 = temperature_data[0:8]  # 00-08
-    part2 = temperature_data[8:12]  # 08-12
-    part3 = temperature_data[12:18]  # 12-18
-    part4 = temperature_data[18:]  # 18-00
-
-    average_part1 = calculate_average(part1)
-    average_part2 = calculate_average(part2)
-    average_part3 = calculate_average(part3)
-    average_part4 = calculate_average(part4)
-    
-
-    #  f'{col1.write(ou+" grader") if NAME== "air_temperature"  else col1.write(ou+ " m/s") }'
-
-    # Print the average temperature for each part
-    
-    part1=f"00-08: fra {temperature_data[0]} til {temperature_data[7]} grader (snittemperatur {average_part1} grader)"
-    col4.write(part1)
-
-    part2=f"08-12: fra {temperature_data[8]} til {temperature_data[11]} grader (snittemperatur {average_part2} grader)"
-    col4.write(part2)
-
-    part3=f"12-18: fra {temperature_data[12]} til {temperature_data[17]} grader (snittemperatur {average_part3} grader)"
-    col4.write(part3)
-
-    part4=f"18-00: fra {temperature_data[18]} til {temperature_data[23]} grader (snittemperatur {average_part4} grader)"
-    col4.write(part4)
-
-    # Overall average temperature
-
-    grand_average = round(sum(temperature_data) / len(temperature_data), 1)
-    grand=f"'Daglig snittemperatur:', {round(grand_average, 1)}"
-    col4.write(grand)
-
-
-
 def fetch_temperature_or_wind(place_string, date_string, NAME):
   #if st.button('hent Værdata'):
   station_found = get_source_id(place_string)
   sum = 0
-  hourly_data=[]
-
   if len(station_found) != 0 and date_string:
 
     DATE = date_string
@@ -134,12 +89,10 @@ def fetch_temperature_or_wind(place_string, date_string, NAME):
       URL = f"https://frost.met.no/observations/v0.jsonld?sources={SOURCE_ID}&referencetime={REFERENCE_TIME}&elements={NAME}"
 
       response = requests.get(URL, auth=(st.secrets["CLIENT_ID"], ''))
-
       data = response.json()
 
       hour = data['data'][0]['referenceTime']
       hourly_temperature_or_wind = data['data'][0]['observations'][0]['value']
-      hourly_data.append(hourly_temperature_or_wind)
       #print(data['data'])
       sum += hourly_temperature_or_wind
 
@@ -161,8 +114,7 @@ def fetch_temperature_or_wind(place_string, date_string, NAME):
   average = round(sum / 24, )
   ou = f'Snitt {NAME} i {place_string} er: {average}'
   f'{col1.write(ou+" grader") if NAME== "air_temperature"  else col1.write(ou+ " m/s") }'
-  
-  return hourly_data
+
 
 def main():
 
@@ -176,10 +128,7 @@ def main():
     fetch_temperature_or_wind(place_string, date_string, 'air_temperature')
   if col3.button('hent vind'):
     fetch_temperature_or_wind(place_string, date_string, 'wind_speed')
-  if col4.button('daglig deles opp i 4 etapper'):
-      partition_of_day(fetch_temperature_or_wind(place_string, date_string, 'air_temperature')
-)
-      
+
 
 if __name__ == "__main__":
   #sources()
