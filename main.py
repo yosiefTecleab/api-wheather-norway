@@ -1,12 +1,12 @@
 import streamlit as st
 import requests
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 import re
 
-
 st.title("Værdata")
-col1, col2, col3, col4 = st.columns([3, 3, 3, 3])  # global s\declares columns
+col1, col2, col3, col4, col5 = st.columns([3, 3, 3, 3,
+                                           3])  # global s\declares columns
 
 
 def sources():
@@ -14,7 +14,6 @@ def sources():
   data = []
   # Send a GET request to the API
   response = requests.get(url, auth=(CLIENT_ID, ''))
-  
 
   # Check if the request was successful (status code 200)
   if response.status_code == 200:
@@ -60,52 +59,49 @@ def get_source_id(place):
 
 
 def calculate_average(data):
-  
+
   return round(sum(data) / len(data), 1) if len(data) > 0 else 0.0
 
 
-
 def partition_of_day(temperature_data):
-    part1 = temperature_data[0:8]  # 00-08
-    part2 = temperature_data[8:12]  # 08-12
-    part3 = temperature_data[12:18]  # 12-18
-    part4 = temperature_data[18:]  # 18-00
+  part1 = temperature_data[0:8]  # 00-08
+  part2 = temperature_data[8:12]  # 08-12
+  part3 = temperature_data[12:18]  # 12-18
+  part4 = temperature_data[18:]  # 18-00
 
-    average_part1 = calculate_average(part1)
-    average_part2 = calculate_average(part2)
-    average_part3 = calculate_average(part3)
-    average_part4 = calculate_average(part4)
-    
+  average_part1 = calculate_average(part1)
+  average_part2 = calculate_average(part2)
+  average_part3 = calculate_average(part3)
+  average_part4 = calculate_average(part4)
 
-    #  f'{col1.write(ou+" grader") if NAME== "air_temperature"  else col1.write(ou+ " m/s") }'
+  #  f'{col1.write(ou+" grader") if NAME== "air_temperature"  else col1.write(ou+ " m/s") }'
 
-    # Print the average temperature for each part
-    
-    part1=f"00-08: fra {temperature_data[0]} til {temperature_data[7]} grader (snittemperatur {average_part1} grader)"
-    col4.write(part1)
+  # Print the average temperature for each part
 
-    part2=f"08-12: fra {temperature_data[8]} til {temperature_data[11]} grader (snittemperatur {average_part2} grader)"
-    col4.write(part2)
+  part1 = f"00-08: fra {temperature_data[0]} til {temperature_data[7]} grader (snittemperatur {average_part1} grader)"
+  col4.write(part1)
 
-    part3=f"12-18: fra {temperature_data[12]} til {temperature_data[17]} grader (snittemperatur {average_part3} grader)"
-    col4.write(part3)
+  part2 = f"08-12: fra {temperature_data[8]} til {temperature_data[11]} grader (snittemperatur {average_part2} grader)"
+  col4.write(part2)
 
-    part4=f"18-00: fra {temperature_data[18]} til {temperature_data[23]} grader (snittemperatur {average_part4} grader)"
-    col4.write(part4)
+  part3 = f"12-18: fra {temperature_data[12]} til {temperature_data[17]} grader (snittemperatur {average_part3} grader)"
+  col4.write(part3)
 
-    # Overall average temperature
+  part4 = f"18-00: fra {temperature_data[18]} til {temperature_data[23]} grader (snittemperatur {average_part4} grader)"
+  col4.write(part4)
 
-    grand_average = round(sum(temperature_data) / len(temperature_data), 1)
-    grand=f"'Daglig snittemperatur:', {round(grand_average, 1)}"
-    col4.write(grand)
+  # Overall average temperature
 
+  grand_average = round(sum(temperature_data) / len(temperature_data), 1)
+  grand = f"'Daglig snittemperatur:', {round(grand_average, 1)}"
+  col4.write(grand)
 
 
 def fetch_temperature_or_wind(place_string, date_string, NAME):
   #if st.button('hent Værdata'):
   station_found = get_source_id(place_string)
   sum = 0
-  hourly_data=[]
+  hourly_data = []
 
   if len(station_found) != 0 and date_string:
 
@@ -134,6 +130,7 @@ def fetch_temperature_or_wind(place_string, date_string, NAME):
       URL = f"https://frost.met.no/observations/v0.jsonld?sources={SOURCE_ID}&referencetime={REFERENCE_TIME}&elements={NAME}"
 
       response = requests.get(URL, auth=(st.secrets["CLIENT_ID"], ''))
+      #response = requests.get(URL, auth=(CLIENT_ID, ''))
 
       data = response.json()
 
@@ -161,8 +158,56 @@ def fetch_temperature_or_wind(place_string, date_string, NAME):
   average = round(sum / 24, )
   ou = f'Snitt {NAME} i {place_string} er: {average}'
   f'{col1.write(ou+" grader") if NAME== "air_temperature"  else col1.write(ou+ " m/s") }'
-  
+
   return hourly_data
+
+
+def forcast_next_7_days(place_string, date_string):
+
+  #reference_time = f'{date_string}/{date_string + timedelta(days=7)}'
+  reference_time = f'{date_string}'
+
+  station_found = get_source_id(place_string)
+
+  SOURCE_ID = ''
+  damaged_source_id = [
+      'SN18703', 'SN18165', 'SN18269', 'SN44620', 'SN50539', 'SN44660',
+      'SN44580'
+  ]
+  #col2.write(f"{NAME} for {place_string} {date_string} {SOURCE_ID} ")
+
+  for index in range(len(station_found)):
+    if not station_found[index] in damaged_source_id:
+      SOURCE_ID = station_found[index]
+
+  endpoint = 'https://frost.met.no/observations/v0.jsonld'
+  parameters = {
+      'sources': {SOURCE_ID},
+      'elements': 'mean(air_temperature P1D)',
+      'referencetime': f'{reference_time}/{date_string + timedelta(days=7)}',
+  }
+  # Issue an HTTP GET request
+  r = requests.get(endpoint, parameters, auth=(CLIENT_ID, ''))
+  # Extract JSON data
+  json = r.json()
+
+  # Check if the request worked, print out any errors
+
+  if r.status_code == 200:
+    data = json['data']
+    print('Data retrieved from frost.met.no!')
+    for date in range(7):
+      #print(data[date]['observations'][0]['value'])
+      output = f"{data[date]['referenceTime'][:10]} : {data[date]['observations'][0]['value']}"
+
+      #print(data[0]['observations'][0]['value'])
+      #f'{col2.write(output) }'
+      f'{col5.write(output)}'
+  else:
+    print('Error! Returned status code %s' % r.status_code)
+    print('Message: %s' % json['error']['message'])
+    print('Reason: %s' % json['error']['reason'])
+
 
 def main():
 
@@ -177,9 +222,13 @@ def main():
   if col3.button('hent vind'):
     fetch_temperature_or_wind(place_string, date_string, 'wind_speed')
   if col4.button('daglig deles opp i 4 etapper'):
-      partition_of_day(fetch_temperature_or_wind(place_string, date_string, 'air_temperature')
-)
-      
+    partition_of_day(
+        fetch_temperature_or_wind(place_string, date_string,
+                                  'air_temperature'))
+
+  if col5.button('neste 7 dager temperature'):
+    forcast_next_7_days(place_string, date_string)
+
 
 if __name__ == "__main__":
   #sources()
