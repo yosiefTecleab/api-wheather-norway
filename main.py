@@ -187,7 +187,7 @@ def forcast_next_7_days(place_string, date_string):
       'referencetime': f'{reference_time}/{date_string + timedelta(days=7)}',
   }
   # Issue an HTTP GET request
-  r = requests.get(endpoint, parameters, auth=(CLIENT_ID, ''))
+  r = requests.get(endpoint, parameters, auth=(st.secrets["CLIENT_ID"], ''))
   # Extract JSON data
   json = r.json()
 
